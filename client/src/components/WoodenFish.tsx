@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import woodenFishImage from "../static/wooden-fish.png";
-import woodenFishSound from "../static/wooden-fish-sound.wav";
+import woodenFishSound from "../static/preview.mp3";
 
 interface WoodenFishProps {
   onTap: () => void;
