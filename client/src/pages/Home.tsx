@@ -46,9 +46,8 @@ export default function Home() {
   });
 
   const handleTap = () => {
-    // This function is now called by the worker after batch processing
-    // Just refresh the daily data to get updated count
-    queryClient.invalidateQueries({ queryKey: ["/api/taps/daily"] });
+    // Trigger immediate API call for each tap
+    tapMutation.mutate();
   };
 
   const handleSoundToggle = (checked: boolean) => {
