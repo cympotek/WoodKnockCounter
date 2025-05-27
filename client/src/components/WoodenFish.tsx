@@ -10,8 +10,11 @@ interface WoodenFishProps {
 
 export default function WoodenFish({ onTap, soundEnabled, isLoading = false }: WoodenFishProps) {
   const [isAnimating, setIsAnimating] = useState(false);
+  const [localCount, setLocalCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const pendingTapsRef = useRef(0);
+  const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
     // Create audio element for wooden fish sound
@@ -19,12 +22,32 @@ export default function WoodenFish({ onTap, soundEnabled, isLoading = false }: W
     audioRef.current.src = woodenFishSound;
     audioRef.current.volume = 0.7;
     
+    // Create worker for batch processing
+    workerRef.current = new Worker(
+      new URL('../workers/tapWorker.ts', import.meta.url),
+      { type: 'module' }
+    );
+    
+    workerRef.current.onmessage = (e) => {
+      const { type, data, error } = e.data;
+      
+      if (type === 'BATCH_SUCCESS') {
+        // Update the parent component with the latest count
+        onTap();
+      } else if (type === 'BATCH_ERROR') {
+        console.error('Worker error:', error);
+      }
+    };
+    
     return () => {
       if (audioRef.current) {
         audioRef.current.remove();
       }
+      if (workerRef.current) {
+        workerRef.current.terminate();
+      }
     };
-  }, []);
+  }, [onTap]);
 
   const handleTap = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (isLoading) return;
@@ -39,13 +62,25 @@ export default function WoodenFish({ onTap, soundEnabled, isLoading = false }: W
     
     // Trigger animation
     setIsAnimating(true);
-    setTimeout(() => setIsAnimating(false), 300);
+    setTimeout(() => setIsAnimating(false), 150); // Shorter animation for better rapid tapping
     
     // Create ripple effect
     createRippleEffect(event);
     
-    // Call the tap handler
-    onTap();
+    // Increment local count immediately for instant feedback
+    setLocalCount(prev => prev + 1);
+    pendingTapsRef.current += 1;
+    
+    // Send to worker for batch processing
+    if (workerRef.current) {
+      workerRef.current.postMessage({ 
+        type: 'ADD_TAPS', 
+        count: 1 
+      });
+    } else {
+      // Fallback to direct API call if worker not available
+      onTap();
+    }
   };
 
   const createRippleEffect = (event: React.MouseEvent<HTMLButtonElement>) => {

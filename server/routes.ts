@@ -63,6 +63,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Record multiple taps in batch
+  app.post("/api/taps/batch", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const today = new Date().toISOString().split('T')[0];
+      const { count } = req.body;
+      
+      if (!count || count < 1) {
+        return res.status(400).json({ message: "Invalid tap count" });
+      }
+
+      // Increment daily tap count by the batch amount
+      let dailyTap = await storage.getDailyTap(userId, today);
+      if (!dailyTap) {
+        dailyTap = await storage.createOrUpdateDailyTap({
+          userId,
+          date: today,
+          tapCount: count,
+        });
+      } else {
+        dailyTap = await storage.createOrUpdateDailyTap({
+          userId,
+          date: today,
+          tapCount: dailyTap.tapCount + count,
+        });
+      }
+
+      // Create batch tap records
+      const tapRecords = [];
+      for (let i = 0; i < count; i++) {
+        tapRecords.push({
+          userId,
+          dailyTapId: dailyTap.id,
+        });
+      }
+
+      // Insert all tap records
+      await Promise.all(
+        tapRecords.map(record => storage.createTapRecord(record))
+      );
+
+      res.json({ 
+        date: today,
+        tapCount: dailyTap.tapCount,
+        processed: count 
+      });
+    } catch (error) {
+      console.error("Error recording batch taps:", error);
+      res.status(500).json({ message: "Failed to record batch taps" });
+    }
+  });
+
   // Get user settings
   app.get("/api/settings", isAuthenticated, async (req: any, res) => {
     try {

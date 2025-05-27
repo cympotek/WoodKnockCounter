@@ -21,7 +21,7 @@ export default function Home() {
     queryKey: ["/api/settings"],
   });
 
-  // Tap mutation
+  // Tap mutation (now used for refreshing data after batch processing)
   const tapMutation = useMutation({
     mutationFn: () => apiRequest("POST", "/api/taps"),
     onSuccess: () => {
