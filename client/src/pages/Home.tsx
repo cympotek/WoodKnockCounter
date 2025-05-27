@@ -46,7 +46,9 @@ export default function Home() {
   });
 
   const handleTap = () => {
-    tapMutation.mutate();
+    // This function is now called by the worker after batch processing
+    // Just refresh the daily data to get updated count
+    queryClient.invalidateQueries({ queryKey: ["/api/taps/daily"] });
   };
 
   const handleSoundToggle = (checked: boolean) => {
@@ -72,7 +74,7 @@ export default function Home() {
         {/* Daily Counter Display */}
         <div className="text-center mb-8">
           <div className="text-6xl font-light text-wood-brown mb-2">
-            {dailyData?.tapCount || 0}
+            {(dailyData as any)?.tapCount || 0}
           </div>
           <p className="text-lg text-gray-600 font-light">今日功德</p>
         </div>
@@ -81,7 +83,7 @@ export default function Home() {
         <div className="relative mb-12">
           <WoodenFish 
             onTap={handleTap} 
-            soundEnabled={settings?.soundEnabled ?? true}
+            soundEnabled={(settings as any)?.soundEnabled ?? true}
             isLoading={tapMutation.isPending}
           />
           <p className="text-center text-gray-500 text-sm mt-4 font-light">
@@ -93,7 +95,7 @@ export default function Home() {
         <div className="flex items-center space-x-3 mb-8">
           <span className="text-sm text-gray-600">自動</span>
           <Switch
-            checked={settings?.soundEnabled ?? true}
+            checked={(settings as any)?.soundEnabled ?? true}
             onCheckedChange={handleSoundToggle}
             disabled={settingsMutation.isPending}
             className="data-[state=checked]:bg-wood-brown"
