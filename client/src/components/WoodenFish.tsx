@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+import woodenFishImage from "@/static/wooden-fish.png";
+import woodenFishSound from "@/static/wooden-fish-sound.wav";
 
 interface WoodenFishProps {
   onTap: () => void;
@@ -14,8 +16,7 @@ export default function WoodenFish({ onTap, soundEnabled, isLoading = false }: W
   useEffect(() => {
     // Create audio element for wooden fish sound
     audioRef.current = new Audio();
-    // Using a web audio API to generate a wooden percussion sound
-    audioRef.current.src = "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAcBSqM1fPHdCUFLYPQ8tuRQgoYZLnr5Z9OFAxOpuPxtWMcBzqI0vPIeisEKIDK8d6PQQoUWrPp7apXFAlBnt/wvF8cBSuV2PPPfiwGMIE=";
+    audioRef.current.src = woodenFishSound;
     audioRef.current.volume = 0.7;
     
     return () => {
@@ -85,22 +86,16 @@ export default function WoodenFish({ onTap, soundEnabled, isLoading = false }: W
           }}
         >
           {/* Wooden Fish Image */}
-          <div className="w-48 h-36 rounded-full overflow-hidden bg-gradient-to-br from-wood-light to-wood-brown shadow-2xl">
-            <div className="w-full h-full bg-gradient-radial from-wood-light via-wood-brown to-amber-800 relative">
-              {/* Wood grain texture simulation */}
-              <div className="absolute inset-0 opacity-30">
-                <div className="w-full h-1 bg-amber-900 mt-4"></div>
-                <div className="w-3/4 h-1 bg-amber-900 mt-6 ml-6"></div>
-                <div className="w-2/3 h-1 bg-amber-900 mt-8 ml-8"></div>
-                <div className="w-1/2 h-1 bg-amber-900 mt-12 ml-12"></div>
-              </div>
-              
-              {/* Fish mouth/opening */}
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-4 bg-gray-900 rounded-full opacity-80"></div>
-              
-              {/* Highlight */}
-              <div className="absolute top-4 left-8 w-16 h-8 bg-white opacity-20 rounded-full blur-sm"></div>
-            </div>
+          <div className="w-48 h-48 flex items-center justify-center">
+            <img 
+              src={woodenFishImage} 
+              alt="木魚" 
+              className="w-full h-full object-contain filter drop-shadow-lg"
+              style={{
+                maxWidth: '200px',
+                maxHeight: '200px',
+              }}
+            />
           </div>
           
           {/* Loading spinner overlay */}
