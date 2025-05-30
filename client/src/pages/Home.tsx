@@ -31,16 +31,17 @@ export default function Home() {
       // Update local count with server response
       setLocalTapCount((data as any).tapCount);
       pendingTapsRef.current = 0;
-      queryClient.invalidateQueries({ queryKey: ["/api/taps/daily"] });
+      // Don't invalidate queries to avoid UI jumping
     },
     onError: () => {
+      // Rollback the local count on error
+      setLocalTapCount(prev => prev - pendingTapsRef.current);
+      pendingTapsRef.current = 0;
       toast({
         title: "錯誤",
         description: "記錄敲擊失敗，請重試",
         variant: "destructive",
       });
-      // Reset pending count on error
-      pendingTapsRef.current = 0;
     },
   });
 
@@ -117,7 +118,7 @@ export default function Home() {
           <WoodenFish 
             onTap={handleTap} 
             soundEnabled={(settings as any)?.soundEnabled ?? true}
-            isLoading={batchTapMutation.isPending}
+            isLoading={false}
           />
           <p className="text-center text-gray-500 text-sm mt-4 font-light">
             輕觸木魚獲得功德
