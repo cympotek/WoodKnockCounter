@@ -11,12 +11,18 @@
 Set up these environment variables in your Vercel project settings:
 
 ```
-DATABASE_URL=your_postgresql_connection_string
+DATABASE_URL=postgres://neondb_owner:npg_ze2dqIfL4AJY@ep-summer-bonus-a1c71d1u-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
 SESSION_SECRET=your_session_secret
 REPL_ID=your_app_identifier
 ISSUER_URL=https://replit.com/oidc
 REPLIT_DOMAINS=your-vercel-domain.vercel.app
 ```
+
+### Required Environment Variables:
+- `DATABASE_URL` - Use the provided Neon connection string
+- `SESSION_SECRET` - Generate a secure random string
+- `REPL_ID` - Your application identifier for authentication
+- `REPLIT_DOMAINS` - Your Vercel deployment domain(s)
 
 ## Step 2: Database Setup
 
