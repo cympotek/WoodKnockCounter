@@ -89,7 +89,7 @@ export default function Home() {
     // Set new timeout to batch requests
     batchTimeoutRef.current = setTimeout(() => {
       sendBatchedTaps();
-    }, 300); // Send batch after 300ms of no new taps
+    }, 3000); // Send batch after 3 seconds of no new taps
   };
 
   const handleSoundToggle = (checked: boolean) => {
