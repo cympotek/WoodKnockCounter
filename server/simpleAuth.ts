@@ -128,6 +128,16 @@ export async function setupAuth(app: Express) {
     }
   });
 
+  app.get("/api/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.redirect("/api/login");
+    });
+  });
+
   app.post("/api/auth/logout", (req, res) => {
     req.session.destroy((err) => {
       if (err) {
