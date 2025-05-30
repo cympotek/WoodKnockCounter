@@ -1,8 +1,4 @@
-import { config } from 'dotenv';
-import { resolve } from 'path';
-// Load environment variables
-config({ path: resolve(process.cwd(), '.env') });
-config({ path: resolve(process.cwd(), '.env.local') });
+// Environment variables are automatically loaded by Vite/Node
 
 import * as client from "openid-client";
 import { Strategy, type VerifyFunction } from "openid-client/passport";
@@ -14,9 +10,23 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
-if (!process.env.REPLIT_DOMAINS) {
-  throw new Error("Environment variable REPLIT_DOMAINS not provided");
-}
+// Support multiple environments
+const getDomains = () => {
+  if (process.env.REPLIT_DOMAINS) {
+    return process.env.REPLIT_DOMAINS.split(",");
+  }
+  
+  // Fallback for local development and Vercel
+  const domains = [];
+  if (process.env.NODE_ENV === "development") {
+    domains.push("localhost:5000");
+  }
+  if (process.env.VERCEL_URL) {
+    domains.push(process.env.VERCEL_URL);
+  }
+  
+  return domains.length > 0 ? domains : ["localhost:5000"];
+};
 
 const getOidcConfig = memoize(
   async () => {
@@ -90,8 +100,7 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
+  for (const domain of getDomains()) {
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,
