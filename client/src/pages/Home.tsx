@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import TopNavigation from "@/components/TopNavigation";
@@ -10,6 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 export default function Home() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("wooden-fish");
+  const [localTapCount, setLocalTapCount] = useState(0);
+  const pendingTapsRef = useRef(0);
+  const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch daily tap count
   const { data: dailyData, isLoading: isDailyLoading } = useQuery({
@@ -21,10 +24,13 @@ export default function Home() {
     queryKey: ["/api/settings"],
   });
 
-  // Tap mutation (now used for refreshing data after batch processing)
-  const tapMutation = useMutation({
-    mutationFn: () => apiRequest("POST", "/api/taps"),
-    onSuccess: () => {
+  // Batch tap mutation for sending multiple taps at once
+  const batchTapMutation = useMutation({
+    mutationFn: (count: number) => apiRequest("POST", "/api/taps/batch", { count }),
+    onSuccess: (data) => {
+      // Update local count with server response
+      setLocalTapCount((data as any).tapCount);
+      pendingTapsRef.current = 0;
       queryClient.invalidateQueries({ queryKey: ["/api/taps/daily"] });
     },
     onError: () => {
@@ -33,6 +39,8 @@ export default function Home() {
         description: "記錄敲擊失敗，請重試",
         variant: "destructive",
       });
+      // Reset pending count on error
+      pendingTapsRef.current = 0;
     },
   });
 
@@ -45,9 +53,35 @@ export default function Home() {
     },
   });
 
+  // Initialize local count when daily data loads
+  useEffect(() => {
+    if (dailyData && (dailyData as any).tapCount !== undefined) {
+      setLocalTapCount((dailyData as any).tapCount);
+    }
+  }, [dailyData]);
+
+  // Function to send batched taps
+  const sendBatchedTaps = () => {
+    if (pendingTapsRef.current > 0) {
+      const tapsToSend = pendingTapsRef.current;
+      batchTapMutation.mutate(tapsToSend);
+    }
+  };
+
   const handleTap = () => {
-    // Trigger immediate API call for each tap
-    tapMutation.mutate();
+    // Immediately increment local count for instant feedback
+    setLocalTapCount(prev => prev + 1);
+    pendingTapsRef.current += 1;
+
+    // Clear existing timeout
+    if (batchTimeoutRef.current) {
+      clearTimeout(batchTimeoutRef.current);
+    }
+
+    // Set new timeout to batch requests
+    batchTimeoutRef.current = setTimeout(() => {
+      sendBatchedTaps();
+    }, 300); // Send batch after 300ms of no new taps
   };
 
   const handleSoundToggle = (checked: boolean) => {
@@ -73,7 +107,7 @@ export default function Home() {
         {/* Daily Counter Display */}
         <div className="text-center mb-8">
           <div className="text-6xl font-light text-wood-brown mb-2">
-            {(dailyData as any)?.tapCount || 0}
+            {localTapCount}
           </div>
           <p className="text-lg text-gray-600 font-light">今日功德</p>
         </div>
@@ -83,7 +117,7 @@ export default function Home() {
           <WoodenFish 
             onTap={handleTap} 
             soundEnabled={(settings as any)?.soundEnabled ?? true}
-            isLoading={tapMutation.isPending}
+            isLoading={batchTapMutation.isPending}
           />
           <p className="text-center text-gray-500 text-sm mt-4 font-light">
             輕觸木魚獲得功德

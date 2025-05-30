@@ -9,6 +9,7 @@ import {
   integer,
   date,
   boolean,
+  unique,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -46,7 +47,9 @@ export const dailyTaps = pgTable("daily_taps", {
   tapCount: integer("tap_count").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  unique("unique_user_date").on(table.userId, table.date)
+]);
 
 // Individual tap records for detailed tracking
 export const tapRecords = pgTable("tap_records", {
