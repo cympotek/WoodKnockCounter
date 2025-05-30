@@ -107,7 +107,7 @@ export default function Home() {
         {/* Daily Counter Display */}
         <div className="text-center mb-8">
           <div className="text-6xl font-light text-wood-brown mb-2">
-            {localTapCount}
+            {localTapCount || 0}
           </div>
           <p className="text-lg text-gray-600 font-light">今日功德</p>
         </div>

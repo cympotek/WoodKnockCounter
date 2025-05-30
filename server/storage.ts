@@ -82,11 +82,12 @@ export class DatabaseStorage implements IStorage {
       .insert(dailyTaps)
       .values(data)
       .onConflictDoUpdate({
-        target: [dailyTaps.userId, dailyTaps.date],
+        target: dailyTaps.userId,
         set: {
           tapCount: data.tapCount,
           updatedAt: new Date(),
         },
+        where: eq(dailyTaps.date, data.date),
       })
       .returning();
     return dailyTap;
