@@ -45,6 +45,54 @@ export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
   app.use(getSession());
 
+  // Login page for browser access
+  app.get("/api/login", (req, res) => {
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>登錄 - 木魚敲擊</title>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 400px; margin: 100px auto; padding: 20px; }
+          input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+          button { width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+          button:hover { background: #45a049; }
+          .title { text-align: center; color: #333; }
+        </style>
+      </head>
+      <body>
+        <h2 class="title">木魚敲擊 - 登錄</h2>
+        <form onsubmit="login(event)">
+          <input type="email" id="email" placeholder="請輸入您的郵箱" required>
+          <button type="submit">登錄/註冊</button>
+        </form>
+        <script>
+          async function login(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            try {
+              const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+              });
+              const result = await response.json();
+              if (result.success) {
+                window.location.href = '/';
+              } else {
+                alert('登錄失敗: ' + result.message);
+              }
+            } catch (error) {
+              alert('登錄失敗: ' + error.message);
+            }
+          }
+        </script>
+      </body>
+      </html>
+    `);
+  });
+
   // Simple email-based authentication for testing
   app.post("/api/auth/login", async (req, res) => {
     try {
