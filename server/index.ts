@@ -1,3 +1,11 @@
+import { config } from "dotenv";
+import { resolve } from "path";
+
+// Load environment variables from .env file
+config({ path: resolve(process.cwd(), '.env') });
+// Load environment variables from .env.local if it exists (for local development)
+config({ path: resolve(process.cwd(), '.env.local') });
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
