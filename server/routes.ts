@@ -56,7 +56,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Record multiple taps in batch
   app.post("/api/taps/batch", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const today = new Date().toISOString().split('T')[0];
       const { count } = req.body;
       
@@ -108,7 +108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user settings
   app.get("/api/settings", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       
       let settings = await storage.getUserSettings(userId);
       if (!settings) {
@@ -129,7 +129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update user settings
   app.put("/api/settings", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const validatedData = insertUserSettingsSchema.parse({
         ...req.body,
         userId,
