@@ -78,19 +78,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOrUpdateDailyTap(data: InsertDailyTap): Promise<DailyTap> {
-    const [dailyTap] = await db
-      .insert(dailyTaps)
-      .values(data)
-      .onConflictDoUpdate({
-        target: dailyTaps.userId,
-        set: {
+    // First try to get existing record
+    const existing = await this.getDailyTap(data.userId, data.date);
+    
+    if (existing) {
+      // Update existing record
+      const [dailyTap] = await db
+        .update(dailyTaps)
+        .set({
           tapCount: data.tapCount,
           updatedAt: new Date(),
-        },
-        where: eq(dailyTaps.date, data.date),
-      })
-      .returning();
-    return dailyTap;
+        })
+        .where(and(eq(dailyTaps.userId, data.userId), eq(dailyTaps.date, data.date)))
+        .returning();
+      return dailyTap;
+    } else {
+      // Create new record
+      const [dailyTap] = await db
+        .insert(dailyTaps)
+        .values(data)
+        .returning();
+      return dailyTap;
+    }
   }
 
   async incrementDailyTap(userId: string, date: string): Promise<DailyTap> {
