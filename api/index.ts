@@ -1,4 +1,29 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { config } from "dotenv";
+import express from "express";
+import { registerRoutes } from "../server/routes";
+
+// Load environment variables
+config();
+
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// Set up routes
+let routesInitialized = false;
+let routePromise: Promise<void> | null = null;
+
+async function initializeRoutes() {
+  if (!routesInitialized && !routePromise) {
+    routePromise = registerRoutes(app).then(() => {
+      routesInitialized = true;
+    });
+  }
+  if (routePromise) {
+    await routePromise;
+  }
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Set CORS headers
@@ -12,17 +37,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  // Simple API endpoint for testing
-  if (req.method === 'GET' && req.url === '/api/health') {
-    res.status(200).json({ status: 'ok', message: 'API is working' });
-    return;
+  try {
+    // Initialize routes if not already done
+    await initializeRoutes();
+    
+    // Use Express app to handle the request
+    app(req, res);
+  } catch (error) {
+    console.error('API Error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
-
-  // For now, return a simple response
-  res.status(200).json({ 
-    message: 'Wooden Fish API',
-    method: req.method,
-    url: req.url,
-    timestamp: new Date().toISOString()
-  });
 }
