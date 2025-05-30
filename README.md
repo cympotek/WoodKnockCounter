@@ -36,13 +36,13 @@
 
 ### 本地開發
 
-1. **克隆項目**
+1. **複製項目**
 ```bash
 git clone <your-repo-url>
 cd wooden-fish-app
 ```
 
-2. **安裝依賴**
+2. **安裝套件**
 ```bash
 npm install
 ```
@@ -53,7 +53,7 @@ cp .env.example .env.local
 # 編輯 .env.local 添加您的數據庫連接字符串
 ```
 
-4. **數據庫設置**
+4. **資料庫設置**
 ```bash
 npm run db:push
 ```

@@ -26,7 +26,8 @@ export default function Home() {
 
   // Batch tap mutation for sending multiple taps at once
   const batchTapMutation = useMutation({
-    mutationFn: (count: number) => apiRequest("POST", "/api/taps/batch", { count }),
+    mutationFn: (count: number) =>
+      apiRequest("POST", "/api/taps/batch", { count }),
     onSuccess: (data) => {
       // Update local count with server response
       setLocalTapCount((data as any).tapCount);
@@ -35,7 +36,7 @@ export default function Home() {
     },
     onError: () => {
       // Rollback the local count on error
-      setLocalTapCount(prev => (prev || 0) - pendingTapsRef.current);
+      setLocalTapCount((prev) => (prev || 0) - pendingTapsRef.current);
       pendingTapsRef.current = 0;
       toast({
         title: "錯誤",
@@ -78,7 +79,7 @@ export default function Home() {
 
   const handleTap = () => {
     // Immediately increment local count for instant feedback
-    setLocalTapCount(prev => (prev || 0) + 1);
+    setLocalTapCount((prev) => (prev || 0) + 1);
     pendingTapsRef.current += 1;
 
     // Clear existing timeout
@@ -122,8 +123,8 @@ export default function Home() {
 
         {/* Interactive Wooden Fish */}
         <div className="relative mb-12">
-          <WoodenFish 
-            onTap={handleTap} 
+          <WoodenFish
+            onTap={handleTap}
             soundEnabled={(settings as any)?.soundEnabled ?? true}
             isLoading={false}
           />
@@ -134,7 +135,7 @@ export default function Home() {
 
         {/* Sound Toggle */}
         <div className="flex items-center space-x-3 mb-8">
-          <span className="text-sm text-gray-600">自動</span>
+          <span className="text-sm text-gray-600">音效</span>
           <Switch
             checked={(settings as any)?.soundEnabled ?? true}
             onCheckedChange={handleSoundToggle}
