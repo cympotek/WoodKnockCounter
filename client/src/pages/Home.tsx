@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function Home() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("wooden-fish");
-  const [localTapCount, setLocalTapCount] = useState(0);
+  const [localTapCount, setLocalTapCount] = useState<number | null>(null);
   const pendingTapsRef = useRef(0);
   const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -35,7 +35,7 @@ export default function Home() {
     },
     onError: () => {
       // Rollback the local count on error
-      setLocalTapCount(prev => prev - pendingTapsRef.current);
+      setLocalTapCount(prev => (prev || 0) - pendingTapsRef.current);
       pendingTapsRef.current = 0;
       toast({
         title: "錯誤",
@@ -57,9 +57,16 @@ export default function Home() {
   // Initialize local count when daily data loads
   useEffect(() => {
     if (dailyData && (dailyData as any).tapCount !== undefined) {
-      setLocalTapCount((dailyData as any).tapCount);
+      // Always initialize if we don't have a local count yet
+      if (localTapCount === null) {
+        setLocalTapCount((dailyData as any).tapCount);
+      }
+      // Only update if we don't have pending taps to avoid overwriting user input
+      else if (pendingTapsRef.current === 0) {
+        setLocalTapCount((dailyData as any).tapCount);
+      }
     }
-  }, [dailyData]);
+  }, [dailyData, localTapCount]);
 
   // Function to send batched taps
   const sendBatchedTaps = () => {
@@ -71,7 +78,7 @@ export default function Home() {
 
   const handleTap = () => {
     // Immediately increment local count for instant feedback
-    setLocalTapCount(prev => prev + 1);
+    setLocalTapCount(prev => (prev || 0) + 1);
     pendingTapsRef.current += 1;
 
     // Clear existing timeout
