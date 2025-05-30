@@ -93,6 +93,11 @@ export async function setupAuth(app: Express) {
     `);
   });
 
+  // Redirect GET requests to proper login page
+  app.get("/api/auth/login", (req, res) => {
+    res.redirect("/api/login");
+  });
+
   // Simple email-based authentication for testing
   app.post("/api/auth/login", async (req, res) => {
     try {
