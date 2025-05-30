@@ -55,7 +55,7 @@ export async function setupAuth(app: Express) {
       }
 
       // Create or get user
-      let user = await storage.getUserByEmail?.(email);
+      let user = await storage.getUserByEmail(email);
       if (!user) {
         user = await storage.upsertUser({
           id: Date.now().toString(), // Simple ID generation
